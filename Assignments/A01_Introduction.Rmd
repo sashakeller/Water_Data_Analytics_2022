@@ -96,7 +96,7 @@ EnoPlot2 <-   ggplot(EnoDischarge, aes(x = Date)) +
          geom_line(aes(y = Discharge_cms, color = "Daily")) +
          geom_line(aes(y = MonthlyMean, color='30 Day Rolling')) +
          scale_color_manual(values= c('Daily'='blue', '30 Day Rolling' = 'red')) +
-         xlab("Discharge in Cubic Meters per Second")+ theme_classic()+
+         xlab("Date")+ theme_classic()+
          scale_y_log10(name='Discharge in Cubic Meters per Second')
 EnoPlot2
 ```

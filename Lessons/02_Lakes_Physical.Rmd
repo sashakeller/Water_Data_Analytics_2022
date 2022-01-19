@@ -112,6 +112,9 @@ ggplot(Pauldata, aes(x = temperature_C, y = depth, color = daynum)) +
   scale_color_viridis_c() +
   labs(x = expression("Temperature "(degree*C)), y = "Depth (m)", color = "DOY")
 
+#upper water column = epilimnion
+#bottom of water column = hypolimnion
+#this is a dimictic lake: it mixes twice in a given year. in the summer it stratifies with the surface being much warmer than the bottom. in the winter the top freezes and the lake stratifies again from 0C to 4C (at 4C water is densest). in spring and fall the water mixes and temperatures vary across the water column.
 ```
 
 How do temperatures at the surface compare to temperatures at the mid-depths and at the bottom?
