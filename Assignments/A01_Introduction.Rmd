@@ -1,6 +1,6 @@
 ---
 title: "Assignment 1: Introduction"
-author: "Student Name"
+author: "Sasha"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
@@ -26,19 +26,32 @@ Target due date: 2022-01-18
 
 1. Post the link to your forked GitHub repository below. Your repo should include one or more commits and an edited README file.  
 
->  Link:
+>  Link:https://github.com/sashakeller/Water_Data_Analytics_2022
 
 ## Data Visualization Exercises
 
 2. Set up your work session. Check your working directory, load packages `tidyverse`,  `dataRetrieval`, and `zoo`. Set your ggplot theme as theme_classic (you may need to look up how to set your theme).
 
 ```{r, message = FALSE}
-
+getwd()
+library(tidyverse)
+library(dataRetrieval)
+library(zoo)
+library(ggplot2)
+theme_set(theme_dark)
 ```
 
 3. Upload discharge data for the Eno River at site 02096500 for the same dates as we studied in class (2012-01-01 through 2021-12-31). Obtain data for discharge. Rename the columns with informative titles, as we did in class. 
 
 ```{r}
+EnoDischarge <- readNWISdv(siteNumbers = "02096500",
+                     parameterCd = "00060", # discharge (ft3/s)
+                     startDate = "2012-01-01",
+                     endDate = "2021-12-31")
+
+names(EnoDischarge)[4:5] <- c("Discharge_cfs", "Approval.Code")
+
+
 
 ```
 
@@ -54,10 +67,37 @@ Target due date: 2022-01-18
 * Add a legend. (hint: Google "add legend two geom layers ggplot")
 
 ```{r}  
+EnoDischarge<-mutate(EnoDischarge, Discharge_cms= Discharge_cfs*0.0283168)
 
 
+EnoDischarge<-mutate(EnoDischarge, MonthlyMean=zoo::rollmean(Discharge_cms,30, fill=NA))
+view(EnoDischarge)
 ```
 
+```{r}
+EnoDischarge <- EnoDischarge %>%
+mutate(Discharge_metric = Discharge_cfs/35.3147,
+Discharge_RollMean = rollmean(Discharge_metric, 30, fill = NA))
+EnoPlot2 <-
+ggplot(EnoDischarge, aes(x = Date)) +
+geom_line(aes(y = Discharge_metric, color = "Daily")) +
+geom_line(aes(y = Discharge_RollMean, color = "30-day"))+
+scale_color_manual(values = c("Daily" = "darkgray", "30-day" = "darkgreen")) +
+scale_y_log10(name = expression("Discharge (m"ˆ3*"/s)")) +
+theme_classic() +
+theme(axis.title.x = element_blank(), legend.title = element_blank(),
+legend.position = "top")
+EnoPlot2
+
+```
+EnoPlot2 <-   
+  ggplot(EnoDischarge, aes(x = Date)) +
+         geom_line(aes(y = Discharge_cms), color='Daily') +
+         geom_line(aes(y = MonthlyMean), color='30 Day Rolling') +
+         scale_color_manual(values= c('Daily'='blue', '30 Day Rolling' = 'red')) +
+         xlab("Discharge in Cubic Meters per Second")+ theme_classic()+
+         scale_y_log10(name='Discharge in Cubic Meters per Second')
+EnoPlot2
 5. In what ways was the second plot a more effective visualization than the first? 
 
 > ANSWER: 

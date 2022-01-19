@@ -46,9 +46,9 @@ To fix this, you will need to set up a personal access token. Take the following
 6. Copy the access token and/or save it somewhere on your computer (like you would store a password).
 7. Open your RStudio window and type the following into the console: 
 
-`install.packages("gitcreds")` 
-`library(gitcreds)`
-`gitcreds_set()`
+install.packages("gitcreds") 
+library(gitcreds)
+gitcreds_set()
  
 Paste the token information when prompted. Your RStudio should now allow you to clone the course repository and make updates throughout the semester.
 
