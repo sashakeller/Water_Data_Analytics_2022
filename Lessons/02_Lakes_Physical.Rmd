@@ -137,10 +137,18 @@ ggplot(subset(Pauldata, year4 == 1993),
   scale_y_reverse() +
   scale_color_viridis_c() +
   labs(x = expression("Temperature "(degree*C)), y = "Depth (m)", color = "DOY") 
-
+```
+```{r}
 # Now, make a plot as above but with dissolved oxygen saturation instead of temperature.
 
+ggplot(subset(Pauldata, year4 == 1993), 
+       aes(x = dissolvedOxygen, y = depth, color = daynum)) +
+  geom_point(alpha = 0.5) +
+  scale_y_reverse() +
+  scale_color_viridis_c() +
+  labs(x = "Dissolved Oxygen (mg/L)", y = "Depth (m)", color = "DOY") 
 
+#Higher nutrient concentrations at hypolimnion, but higher radiance at the epilimnion. primary producers prosper the most at the middle ground (in this figure between 3-5m).
 ```
 
 Why does mixing occur in the spring and fall? What are the mechanisms that make this possible?
@@ -168,7 +176,8 @@ ggplot(Pauldata_thermo, aes(x = daynum, y = thermocline)) +
 ```
 
 How does thermocline depth change over the course of the year? When do we observe the most variability in thermocline depth?
-<add notes here>
+
+Thermocline deepens over the course of the year. 
 
 
 ### Climate change
