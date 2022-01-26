@@ -16,6 +16,9 @@ editor_options:
 ## Opening Discussion
 What are the physical properties of streams and rivers? What variables might be of interest?
 
+Morphology (the shape/dimensions of the river), sediment, discharge (volume moving and how quickly), grade (slope), how sinuous the channel is (how much it winds and snakes (measured in sinuosity)).
+
+
 ## Session Set Up
 
 ```{r, message = FALSE}
@@ -188,7 +191,7 @@ NehalemPlot
 
 CombinedPlot <- 
   plot_grid(EnoPlot, VerdePlot, BitterrootPlot, SaukPlot, NehalemPlot, 
-            ncol = 1)
+            ncol = 1, rel_heights = c(1, 1, 1, 1, 1.2),align = "hv")
 CombinedPlot
 
 # add relative heights and align axes
@@ -196,7 +199,11 @@ CombinedPlot
 
 How does the magnitude of discharge compare for these rivers?
 
->
+>Verde river is ephemeral. 
+
+perennial = always flowing
+ephemeral = flow occasionally
+
 
 Which of these rivers have a seasonal cycle of discharge? How might you explain the presence and timing of seasonal cycles based on climatic conditions?
 
