@@ -227,7 +227,7 @@ BitterrootDischarge.Historical <- mutate(BitterrootDischarge.Historical,
 
 BitterrootDischarge.Pattern <- BitterrootDischarge.Historical %>%
   group_by(DOY) %>%
-  summarise(Median.Discharge = median(Discharge), 
+  summarise(Median.Discharge = median(Discharge, na.rm = TRUE), 
             p95.Discharge = quantile(Discharge, 0.95, na.rm = TRUE),
             p5.Discharge = quantile(Discharge, 0.05, na.rm = TRUE))
 

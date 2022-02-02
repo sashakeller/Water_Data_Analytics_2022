@@ -40,7 +40,7 @@ library(rLakeAnalyzer)
 
 NTLdata <- read.csv("./Data/Raw/NTL-LTER_Lake_ChemistryPhysics_Raw.csv")
 NTLdata<- NTLdata %>%
-  dropna(temperature_C)
+  drop_na(temperature_C)
 NTLdata$sampledate<-as.Date(NTLdata$sampledate, format = "%m/%d/%y")
 
 NTLdata<-mutate(NTLdata, Month = format(NTLdata$sampledate, "%m"))
@@ -59,7 +59,7 @@ In 4 of 6 lakes we see homogenization of temperature across th water column in W
 ```{r}
 NTL1993Temp<- ggplot(subset(NTLdata, year4 == 1993),
                  aes(x=temperature_C, y=depth, color=daynum))+ 
-  geom_point()+
+  geom_point(alpha = 0.5)+
   scale_y_reverse()+
   labs(x= expression("Temperature" (degree*C)), y= "Depth (m)", color="DOY")+
   facet_wrap(~ lakename)

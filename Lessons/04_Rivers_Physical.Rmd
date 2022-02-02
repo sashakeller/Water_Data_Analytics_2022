@@ -74,9 +74,12 @@ EnoDischarge <- EnoDischarge %>%
   mutate(Year = year(Date), 
          WaterYear = water_year(Date, origin = "usgs")) %>%
   filter(WaterYear != "1963")
+#data contains only 30 days of 1963 so we filter all years that are not 1963
 
 # Water Year is a factor. We want to re-classify as numeric.
 EnoDischarge$WaterYear <- as.numeric(as.character(EnoDischarge$WaterYear))
+#can't go directly from factor to numeric in R hence ^ ^ ^
+
 
 EnoRecurrence <- 
   EnoDischarge %>%
@@ -98,7 +101,8 @@ Let's display and model the relationship between peak annual disharge and recurr
 ggplot(EnoRecurrence, aes(x = RecurrenceInterval, y = PeakDischarge)) +
   geom_point() +
   scale_x_log10() +
-  geom_smooth(method = "lm")
+  geom_smooth(method = "lm", color = "black", se=FALSE)
+#se is standard error, can flip that on.
 
 Eno.RImodel <- lm(data = EnoRecurrence, PeakDischarge ~ log10(RecurrenceInterval))
 summary(Eno.RImodel)
