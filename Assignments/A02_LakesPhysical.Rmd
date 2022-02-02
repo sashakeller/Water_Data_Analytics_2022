@@ -1,6 +1,6 @@
 ---
 title: "Assignment 2: Physical Properties of Lakes"
-author: "Student Name"
+author: "Sasha Keller"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
@@ -31,8 +31,21 @@ Target due date: 2022-01-25
 5. Set your ggplot theme (can be theme_classic or something else)
 
 ```{r}
+getwd()
 
+library(tidyverse)
+library(lubridate)
+#install.packages("rLakeAnalyzer")
+library(rLakeAnalyzer)
 
+NTLdata <- read.csv("./Data/Raw/NTL-LTER_Lake_ChemistryPhysics_Raw.csv")
+NTLdata<- NTLdata %>%
+  dropna(temperature_C)
+NTLdata$sampledate<-as.Date(NTLdata$sampledate, format = "%m/%d/%y")
+
+NTLdata<-mutate(NTLdata, Month = format(NTLdata$sampledate, "%m"))
+view(NTLdata)
+theme_set(theme_dark())
 ```
 
 ## Creating and analyzing lake temperature profiles
@@ -41,9 +54,24 @@ Target due date: 2022-01-25
 
 What seasonal trends do you observe, and do these manifest differently in each lake?
 
+In 4 of 6 lakes we see homogenization of temperature across th water column in Winter, indicating a frozen top. It appears they all stratify over the course of the year. There appear to be several straight lines in upper water column for all lakes throughout the year. It is unclear to me whether they have become non-stratified, indicating that these might be polymictic lakes, or if there is, perhaps, some lack of sensitivity in measuring equipment or other phenomenon at play. Central long lake does not appear to become non-stratified and is clearly a shallow polymictic lake. Tuesday lake lacks the winter lack of stratification of the other lakes, but does also appear tohave some of these non-stratified moments throughout the year.
+
 ```{r}
+NTL1993Temp<- ggplot(subset(NTLdata, year4 == 1993),
+                 aes(x=temperature_C, y=depth, color=daynum))+ 
+  geom_point()+
+  scale_y_reverse()+
+  labs(x= expression("Temperature" (degree*C)), y= "Depth (m)", color="DOY")+
+  facet_wrap(~ lakename)
+NTL1993Temp
 
-
+NTL1993O2<- ggplot(subset(NTLdata, year4 == 1993),
+                 aes(x=dissolvedOxygen, y=depth, color=daynum))+ 
+  geom_point()+
+  scale_y_reverse()+
+  labs(x= "Dissolved Oxygen", y= "Depth (m)", color="DOY")+
+  facet_wrap(~ lakename)
+NTL1993O2
 ```
 
 6. Create a new dataset that calculates thermocline depths for all lakes on all dates (hint: you will need group by lake, year, month, DOY, and sample date).
@@ -51,8 +79,24 @@ What seasonal trends do you observe, and do these manifest differently in each l
 8. Create a boxplot of thermocline depth distributions split up by lake name on the x axis and by month as the fill color (hint: you will need to set Month as a factor). Choose a color palette other than the ggplot default, relabel axes and legend, and place the legend on the top of the graph.
 
 Do all the lakes have a similar seasonal progression of thermocline deepening? Which lakes have the deepest thermoclines, and how does this relate to their maximum depth? 
+They all appear to to obtain deeper thermoclines as the year progresses. Some of the lakes only have one thermocline measurement, which makes it difficult to interpret. It appears that thermoclines are absent in shallow lakes and increasingly deep with increasing lake depth.
+
 
 ```{r}
+thermoplot<- NTLdata %>%
+  group_by(lakename,daynum,Month,year4,sampledate) %>%
+  summarise(thermocline = thermo.depth(wtr= temperature_C,depths = depth, seasonal = FALSE)) %>%
+  filter(thermocline>1)
 
+ggplot(thermoplot, aes(x= daynum, y=thermocline, color=lakename))+
+  geom_point(alpha=0.5)+
+  scale_color_brewer(palette="Accent")
+
+ggplot(thermoplot,aes(x=lakename,y=thermocline, fill=as.factor(Month)))+
+  geom_boxplot()+
+  scale_color_brewer(palette="Accent")+
+  labs(x="Lake Names", y="Thermocline Depth", color= "Month")+
+  theme_dark()+
+  theme(legend.position="top")
 ```
 
