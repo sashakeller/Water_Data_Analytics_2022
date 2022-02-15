@@ -1,6 +1,6 @@
 ---
 title: "Assignment 4: Physical Properties of Rivers"
-author: "Student Name"
+author: "Sasha Keller"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
@@ -30,7 +30,53 @@ Target due date: 2022-02-15
 4. Calculate annual total discharge, annual baseflow, and annual proportion baseflow for the two sites.
 
 ```{r}
+getwd()
+#install.packages("EcoHydRology")
+library(EcoHydRology)
+library(tidyverse)
+library(cowplot)
+library(dataRetrieval)
+library(lubridate)
+library(lfstat)
 
+BitterrootDischarge <- readNWISdv(siteNumbers = "12344000",
+                     parameterCd = "00060", # discharge (ft3/s)
+                     startDate = "2011-10-01", 
+                     endDate = "2021-09-30")
+
+NehalemDischarge <- readNWISdv(siteNumbers = "14299800",
+                     parameterCd = "00060", # discharge (ft3/s)
+                     startDate = "2011-10-01", 
+                     endDate = "2021-09-30")
+
+names(BitterrootDischarge)[4:5] <- c("Discharge", "Approval.Code")
+names(NehalemDischarge)[4:5] <- c("Discharge", "Approval.Code")
+
+BitterrootDischarge<- BitterrootDischarge %>%
+  mutate(Baseflow=baseflow(Discharge),
+         Stormflow=Discharge-Baseflow,
+         WaterYear=water_year(Date)) %>%
+  drop_na()
+BitterrootDischarge$WaterYear<- as.numeric(as.character(BitterrootDischarge$WaterYear))
+
+NehalemDischarge<- NehalemDischarge %>%
+  mutate(Baseflow=baseflow(Discharge),
+         Stormflow=Discharge-Baseflow,
+         WaterYear=water_year(Date)) %>%
+  drop_na()
+NehalemDischarge$WaterYear<- as.numeric(as.character(NehalemDischarge$WaterYear))
+
+BitterrootDischarge_summary <- BitterrootDischarge %>%
+  group_by(WaterYear) %>%
+  summarise(Discharge.acft.yr=sum(Discharge)*723.968,
+            Baseflow.acft.yr=sum(Baseflow)*723.968,
+            Baseflow.prop=Baseflow.acft.yr/Discharge.acft.yr)
+
+NehalemDischarge_summary <- NehalemDischarge %>%
+  group_by(WaterYear) %>%
+  summarise(Discharge.acft.yr=sum(Discharge)*723.968,
+            Baseflow.acft.yr=sum(Baseflow)*723.968,
+            Baseflow.prop=Baseflow.acft.yr/Discharge.acft.yr)
 
 ```
 
@@ -40,10 +86,44 @@ Target due date: 2022-02-15
 6. For both sites, create a graph displaying annual total discharge and annual baseflow across years, and a second graph displaying the proportion baseflow across years (adjust axis labels accordingly). Plot these graphs on top of one another using `plot_grid`. Remember to align the axes!
 
 ```{r}
+ggplot(BitterrootDischarge,aes(x=Date))+
+  geom_line(aes(y=Discharge), color= "red")+
+  geom_line(aes(y=BitterrootDischarge$Baseflow), color="blue")+
+  labs(x= "Date", y="Discharge (ft/s)")+
+  theme_dark()
 
+ggplot(NehalemDischarge,aes(x=Date))+
+  geom_line(aes(y=Discharge), color= "red")+
+  geom_line(aes(y=NehalemDischarge$Baseflow), color="blue")+
+  labs(x= "Date", y="Discharge (ft/s)")+
+  theme_dark()
+
+BitterDisch<-ggplot(BitterrootDischarge_summary, aes(x=WaterYear))+
+  geom_point(aes(y=Discharge.acft.yr), color="red")+
+  geom_point(aes(y=Baseflow.acft.yr), color="blue")+
+  labs(x= element_blank(),y="Baseflow Proportion")+
+  theme_dark()
+
+BitterProp<-ggplot(BitterrootDischarge_summary, aes(x=WaterYear))+
+  geom_point(aes(y=Baseflow.prop), color="green")+
+  labs(x= element_blank(),y="Discharge (Acre feet/year)")+
+  theme_dark()
+
+NehalemDisch<-ggplot(NehalemDischarge_summary, aes(x=WaterYear))+
+  geom_point(aes(y=Discharge.acft.yr), color="red")+
+  geom_point(aes(y=Baseflow.acft.yr), color="blue")+
+  labs(x= element_blank(),y="Discharge (Acre feet/year)")+
+  theme_dark()
+
+NehalemProp<-ggplot(NehalemDischarge_summary, aes(x=WaterYear))+
+  geom_point(aes(y=Baseflow.prop), color="green")+
+  labs(x="Baseflow Proportion", y="Water Year")+
+  theme_dark()
+
+plot_grid(BitterDisch,BitterProp,NehalemDisch,NehalemProp, ncol = 1, rel_heights = c(1, 1, 1, 1, 1.2),align = "hv")
 
 ```
 
 7. How do these rivers differ in their discharge and baseflow, both within and across years? How would you attribute these patterns to the climatic conditions in these locations?
 
-> 
+> The Nehalem river baseflow makes up a much smaller proportion of its annual discharge than the Bitterroot, which maintains a roughly 80% baseflow proportion. This indicates that the Nehalem discharge is dictated largely by precipitation or other events. This is consistent given the Nehalem's location, the pacific northwest, a temperate rainforest, should have discharge that is greatly affected by precipitation events. The Bitterroot on the other hand, in Montana, has a reliable baseflow, which is consistent with a drier, less storm prone climate.
