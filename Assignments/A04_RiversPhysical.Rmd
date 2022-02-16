@@ -41,12 +41,12 @@ library(lfstat)
 
 BitterrootDischarge <- readNWISdv(siteNumbers = "12344000",
                      parameterCd = "00060", # discharge (ft3/s)
-                     startDate = "2011-10-01", 
+                     startDate = "2012-10-01", 
                      endDate = "2021-09-30")
 
 NehalemDischarge <- readNWISdv(siteNumbers = "14299800",
                      parameterCd = "00060", # discharge (ft3/s)
-                     startDate = "2011-10-01", 
+                     startDate = "2012-10-01", 
                      endDate = "2021-09-30")
 
 names(BitterrootDischarge)[4:5] <- c("Discharge", "Approval.Code")
@@ -55,21 +55,19 @@ names(NehalemDischarge)[4:5] <- c("Discharge", "Approval.Code")
 BitterrootDischarge<- BitterrootDischarge %>%
   mutate(Baseflow=baseflow(Discharge),
          Stormflow=Discharge-Baseflow,
-         WaterYear=water_year(Date)) %>%
-  drop_na()
+         WaterYear=water_year(Date))
 BitterrootDischarge$WaterYear<- as.numeric(as.character(BitterrootDischarge$WaterYear))
 
 NehalemDischarge<- NehalemDischarge %>%
   mutate(Baseflow=baseflow(Discharge),
          Stormflow=Discharge-Baseflow,
-         WaterYear=water_year(Date)) %>%
-  drop_na()
+         WaterYear=water_year(Date)) 
 NehalemDischarge$WaterYear<- as.numeric(as.character(NehalemDischarge$WaterYear))
 
 BitterrootDischarge_summary <- BitterrootDischarge %>%
   group_by(WaterYear) %>%
-  summarise(Discharge.acft.yr=sum(Discharge)*723.968,
-            Baseflow.acft.yr=sum(Baseflow)*723.968,
+  summarise(Discharge.acft.yr=sum(Discharge, na.rm=TRUE)*723.968,
+            Baseflow.acft.yr=sum(Baseflow, na.rm = TRUE)*723.968,
             Baseflow.prop=Baseflow.acft.yr/Discharge.acft.yr)
 
 NehalemDischarge_summary <- NehalemDischarge %>%
@@ -99,28 +97,29 @@ ggplot(NehalemDischarge,aes(x=Date))+
   theme_dark()
 
 BitterDisch<-ggplot(BitterrootDischarge_summary, aes(x=WaterYear))+
-  geom_point(aes(y=Discharge.acft.yr), color="red")+
-  geom_point(aes(y=Baseflow.acft.yr), color="blue")+
+  geom_line(aes(y=Discharge.acft.yr), color="red")+
+  geom_line(aes(y=Baseflow.acft.yr), color="blue")+
   labs(x= element_blank(),y="Baseflow Proportion")+
   theme_dark()
 
 BitterProp<-ggplot(BitterrootDischarge_summary, aes(x=WaterYear))+
-  geom_point(aes(y=Baseflow.prop), color="green")+
+  geom_col(aes(y=Baseflow.prop), color="green")+
   labs(x= element_blank(),y="Discharge (Acre feet/year)")+
   theme_dark()
 
 NehalemDisch<-ggplot(NehalemDischarge_summary, aes(x=WaterYear))+
-  geom_point(aes(y=Discharge.acft.yr), color="red")+
-  geom_point(aes(y=Baseflow.acft.yr), color="blue")+
+  geom_line(aes(y=Discharge.acft.yr), color="red")+
+  geom_line(aes(y=Baseflow.acft.yr), color="blue")+
   labs(x= element_blank(),y="Discharge (Acre feet/year)")+
   theme_dark()
 
 NehalemProp<-ggplot(NehalemDischarge_summary, aes(x=WaterYear))+
-  geom_point(aes(y=Baseflow.prop), color="green")+
+  geom_col(aes(y=Baseflow.prop), color="green")+
   labs(x="Baseflow Proportion", y="Water Year")+
   theme_dark()
 
-plot_grid(BitterDisch,BitterProp,NehalemDisch,NehalemProp, ncol = 1, rel_heights = c(1, 1, 1, 1, 1.2),align = "hv")
+plot_grid(BitterDisch,BitterProp, ncol = 1, rel_heights = c(1, 1, 1, 1, 1.2),align = "hv")
+plot_grid(NehalemDisch,NehalemProp, ncol = 1, rel_heights = c(1, 1, 1, 1, 1.2),align = "hv")
 
 ```
 
