@@ -1,6 +1,6 @@
 ---
 title: "Assignment 5: Water Quality in Lakes"
-author: "Student Name"
+author: "Sasha Keller"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
@@ -28,7 +28,16 @@ Target due date: 2022-02-22
 2. Load the LAGOSdata database and the trophic state index csv file we created in class.
 
 ```{r setup}
+getwd()
+library(tidyverse)
+library(lubridate)
+#install.packages("LASOGNE")
+library(LAGOSNE)
+theme_set(theme_dark())
 
+LAGOSdata <- lagosne_load()
+#lagosne_get(dest_folder = LAGOSNE:::lagos_path(), overwrite = TRUE)
+read.csv("./Data/Processed/LAGOStrophic.csv")
 ```
 
 ## Trophic State Index
