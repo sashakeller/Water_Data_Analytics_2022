@@ -28,6 +28,7 @@ library(LAGOSNE)
 
 theme_set(theme_classic())
 options(scipen = 100)
+#tells R to report this many digits before simplifying in outputs
 
 lagosne_get(dest_folder = LAGOSNE:::lagos_path(), overwrite = TRUE)
 
@@ -71,7 +72,7 @@ For example, let's find out how many lakes are in each state. Note that LAGOSloc
 ```{r}
 # Join data frames
 LAGOSlocations <- left_join(LAGOSlocus, LAGOSstate, by = "state_zoneid")
-
+#if the two data frames have different column names with same info, in left_join... by=c("column1" = "column2")
 ggplot(LAGOSlocations, aes(x = state)) + 
   geom_bar(stat = "count")
 
