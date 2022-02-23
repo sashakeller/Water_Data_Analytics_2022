@@ -93,7 +93,7 @@ ggplot(LAGOSjoined, aes(x = tn, y = chla)) +
   scale_y_log10() +
   scale_x_log10() +
   labs(x = expression("TN ("*mu*"g/L)"), y = expression("Chl a ("*mu*"g/L"))
-
+#can use drop_na() to remove the entries under a given column (for example, missing state names) to visualize data more appropiately without removing other important entries in a given row (for example, missing chlorophyll but has total P)
 ```
 
 ## Run a stressor-response relationship for Minnesota lakes
@@ -116,7 +116,15 @@ Exercise:
 8. Create a linear model to evaluate the chlorophyll-TP relationship, with HUC 4 code as an interaction effect. Is it important to account for the HUC 4 code in the model? How might this classification impact potential nutrient management?
 
 ```{r}
-
+LAGOSMN <- LAGOSjoined %>%
+  left_join(.,LAGOSdata$hu4)%>%
+  select(lagoslakeid, sampledate, state_name, hu4, chla, tn, tp)%>%
+  LAGOSMN$sampledate<-as.Date(LAGOSMN$sampledate, form="%y/%m/%d")%>%
+  mutate(Month = month(sampledate),
+         Year=year(sampledate))%>%
+  filter(state_name="Minnesota")%>%
+  filter(LAGOSMN$Year>="1990")%>%
+  filter(LAGOSMN$Month %in% c(6:9))
 
 ```
 
