@@ -35,9 +35,9 @@ library(lubridate)
 library(LAGOSNE)
 theme_set(theme_dark())
 
-LAGOSdata <- lagosne_load()
 #lagosne_get(dest_folder = LAGOSNE:::lagos_path(), overwrite = TRUE)
-read.csv("./Data/Processed/LAGOStrophic.csv")
+LAGOSdata <- lagosne_load()
+LAGOStrophic<-read.csv("./Data/Processed/LAGOStrophic.csv")
 ```
 
 ## Trophic State Index
@@ -45,6 +45,28 @@ read.csv("./Data/Processed/LAGOStrophic.csv")
 3. Similar to the trophic.class column we created in class (determined from TSI.chl values), create two additional columns in the data frame that determine trophic class from TSI.secchi and TSI.tp (call these trophic.class.secchi and trophic.class.tp). 
 
 ```{r}
+LAGOStrophic <- LAGOStrophic %>%
+  mutate(trophic.class.secchi= case_when(TSI.secchi < 40 ~ "Oligotrophic",
+                                   TSI.secchi >= 40 & TSI.secchi < 50 ~ "Mesotrophic",
+                                   TSI.secchi >= 50 & TSI.secchi< 70 ~ "Eutrophic",
+                                   TSI.secchi >= 70 ~ "Hypereutrophic"),
+         trophic.class.tp=TSI.tp < 40 ~ "Oligotrophic",
+                                   TSI.tp >= 40 & TSI.tp < 50 ~ "Mesotrophic",
+                                   TSI.tp >= 50 & TSI.tp< 70 ~ "Eutrophic",
+                                   TSI.tp >= 70 ~ "Hypereutrophic")
+
+
+
+class(LAGOStrophic$trophic.class.secchi)
+
+LAGOStrophic$trophic.class.secchi <- factor(LAGOStrophic$trophic.class.secchi,
+                                     levels = c("Oligotrophic", "Mesotrophic", "Eutrophic", "Hypereutrophic"))
+
+
+class(LAGOStrophic$trophic.class.tp)
+
+LAGOStrophic$trophic.class.tp <- factor(LAGOStrophic$trophic.class.tp,
+                                     levels = c("Oligotrophic", "Mesotrophic", "Eutrophic", "Hypereutrophic"))
 
 ```
 
