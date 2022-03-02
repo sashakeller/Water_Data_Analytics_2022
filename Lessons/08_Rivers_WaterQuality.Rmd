@@ -161,6 +161,8 @@ ggplot(NeuseWQFlow_processed, aes(x = Flow_cfs, y = FecalColiform_cfu.100mL)) +
 
 summary(lm(data = NeuseWQFlow_processed, log10(FecalColiform_cfu.100mL) ~ log10(Flow_cfs)))
 
+#plot(lm(data = NeuseWQFlow_processed, log10(FecalColiform_cfu.100mL) ~ log10(Flow_cfs)))
+
 ggplot(NeuseWQFlow_processed, aes(x = Flow_cfs, y = SpC_uS.cm)) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE, color = "black") +
@@ -182,7 +184,7 @@ Exercise:
 3. How do fecal coliform and specific conductivity vary as a function of hydrologic condition?
 
 ```{r}
-
+as.factor(NeuseWQ_Processed$HydrologicCondition, levels=c("Not determined","Stable, low stage", "Falling stage", "Stable, normal stage", "Rising stage", "Stable, high stage", "Peak stage"))
 
 ```
 
