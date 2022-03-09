@@ -1,6 +1,6 @@
 ---
 title: "Assignment 6: Water Quality in Lakes"
-author: "Student Name"
+author: "Sasha Keller"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
