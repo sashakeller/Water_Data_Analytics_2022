@@ -53,7 +53,7 @@ names(BitterrootDischarge)[4:5] <- c("Discharge", "Approval.Code")
 names(NehalemDischarge)[4:5] <- c("Discharge", "Approval.Code")
 
 BitterrootDischarge<- BitterrootDischarge %>%
-  mutate(Baseflow=baseflow(Discharge),
+  mutate(Baseflow=baseflow(BitterrootDischarge$Discharge),
          Stormflow=Discharge-Baseflow,
          WaterYear=water_year(Date))
 BitterrootDischarge$WaterYear<- as.numeric(as.character(BitterrootDischarge$WaterYear))
@@ -88,7 +88,8 @@ ggplot(BitterrootDischarge,aes(x=Date))+
   geom_line(aes(y=Discharge), color= "red")+
   geom_line(aes(y=BitterrootDischarge$Baseflow), color="blue")+
   labs(x= "Date", y="Discharge (ft/s)")+
-  theme_dark()
+  theme_dark()+
+  theme(legend.position="top")
 
 ggplot(NehalemDischarge,aes(x=Date))+
   geom_line(aes(y=Discharge), color= "red")+

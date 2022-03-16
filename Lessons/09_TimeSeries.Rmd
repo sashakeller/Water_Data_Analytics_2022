@@ -74,11 +74,11 @@ ggplot(NeuseFlow, aes(x = Date, y = Discharge)) +
 
 How would you characterize the time series of discharge and conductivity at this location? Do you see a linear trend over time? What factors might you need to take into account to be able to detect a trend or forecast future conditions?
 
->
+> Seasonality is maybe a factor, no obvious data gaps, lots of variability. Seems unlikely that linear model would be appropriate. 
 
 Are there situations where it would be appropriate to use a linear regression to model a time series? If so, what is an example?
 
->
+> Less variable, more aggregated data.
 
 
 ## Decomposing a time series dataset
@@ -160,9 +160,9 @@ We see that conductivity data were collected approximately monthly across the sa
 
 Common interpolation methods: 
 
-* **Piecewise constant**: <fill in notes here>
-* **Linear**: <fill in notes here>
-* **Spline**: <fill in notes here>
+* **Piecewise constant**: aka nearest neighbor. replicates nearest points for missing data?
+* **Linear**: draws straight line between data points
+* **Spline**: 
 
 Linear interpolation is most common for water quality data, and fits with our understanding about how conductivity might change over time in this system. 
 
@@ -192,7 +192,9 @@ NeuseCond_monthly$Conductivity <- linearinterpolation$y
 3. Analyze the decomposed time series. Is there distinct seasonality? How does the magnitude of seasonality compare to the trend and random components of the time series? What are some caveats that need to be considered for the gap between October 2001 through February 2007?
 
 ```{r}
-
+NeuseCond_ts<-ts(NeuseCond_monthly[[3]],frequency=12)
+NeuseCond_Decomp<-stl(NeuseCond_ts,s.window="periodic")
+plot(NeuseCond_Decomp)
 ```
 
 
