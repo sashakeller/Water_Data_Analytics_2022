@@ -55,11 +55,11 @@ In general, detecting a monotonic trend requires a long sequence of data with fe
 
 Adjusting the data may be necessary to fulfill the assumptions of a trend test. These adjustments include **aggregation**, **subsampling**, and **interpolation**. What do each of these mean, and why might we want to use them?
 
-> aggregation: 
+> aggregation: Can help fill gaps by changing time frame (daily -> monthly). 
 
-> subsampling: 
+> subsampling: Picking out individual values (also can convert daily-> monthly), but takes individual data instead of combining.
 
-> interpolation: 
+> interpolation: connecting a gap in data
 
 Specific tests for monotonic trend analysis are listed below, with assumptions and tips: 
 
@@ -128,14 +128,16 @@ Let's visualize the seasonality of these two datasets. Add some editing to impro
 
 ```{r}
 Condplot <-
-ggplot(NeuseCond_monthly, aes(x = as.factor(Month), y = Conductivity)) +
-  geom_boxplot()
+ggplot(subset(NeuseCond_monthly,!is.na(Month)),
+       aes(x = as.factor(Month), y = Conductivity)) +
+  geom_boxplot()#+
+  #geom_hline(yintercept=mean(NeuseCond_monthly$Conductivity),color=red)
 
 Flowplot <-
 ggplot(NeuseFlow_monthly, aes(x = as.factor(Month), y = Discharge_acftmo)) +
   geom_boxplot()
 
-plot_grid(Condplot, Flowplot, ncol = 1)
+plot_grid(Condplot, Flowplot, ncol = 1, align ="hv")
 ```
 
 
@@ -156,7 +158,7 @@ summary(NeuseCond_trend)
 
 What would we conclude based on these findings? 
 
->
+> Most significant increases in jan-march, also increase in discharge. This means a much higher increase in salinizing agents. Top conductivity is staying the same, but base conductivity is increasing. 
  
 If a significant trend was present, we could compute a **Sen's Slope** to quantify that trend (`sens.slope` function in the trend package).
 
@@ -166,6 +168,10 @@ Exercise: run the same test for discharge.
 NeuseFlow_timeseries <- ts(NeuseFlow_monthly$Discharge_acftmo, frequency = 12,
                            start = c(1976, 1, 1), end = c(2021, 12, 1))
 
+NeuseFlow_trend<- smk.test(NeuseFlow_timeseries)
+
+NeuseFlow_trend
+summary(NeuseFlow_trend)
 
 ```
 
