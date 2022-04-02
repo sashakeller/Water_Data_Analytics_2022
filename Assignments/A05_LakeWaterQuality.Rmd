@@ -50,37 +50,66 @@ LAGOStrophic <- LAGOStrophic %>%
                                    TSI.secchi >= 40 & TSI.secchi < 50 ~ "Mesotrophic",
                                    TSI.secchi >= 50 & TSI.secchi< 70 ~ "Eutrophic",
                                    TSI.secchi >= 70 ~ "Hypereutrophic"),
-         trophic.class.tp=TSI.tp < 40 ~ "Oligotrophic",
+        trophic.class.tp=case_when(TSI.tp < 40 ~ "Oligotrophic",
                                    TSI.tp >= 40 & TSI.tp < 50 ~ "Mesotrophic",
                                    TSI.tp >= 50 & TSI.tp< 70 ~ "Eutrophic",
-                                   TSI.tp >= 70 ~ "Hypereutrophic")
+                                   TSI.tp >= 70 ~ "Hypereutrophic"),
+         TSI.chl = round(10*(6 - (2.04 - 0.68*log(chla)/log(2)))),
+         TSI.secchi = round(10*(6 - (log(secchi)/log(2)))), 
+         TSI.tp = round(10*(6 - (log(48/tp)/log(2)))), 
+         trophic.class = case_when(TSI.chl < 40 ~ "Oligotrophic",
+                                   TSI.chl >= 40 & TSI.chl < 50 ~ "Mesotrophic",
+                                   TSI.chl >= 50 & TSI.chl< 70 ~ "Eutrophic",
+                                   TSI.chl >= 70 ~ "Hypereutrophic"))
+
 
 
 
 class(LAGOStrophic$trophic.class.secchi)
-
 LAGOStrophic$trophic.class.secchi <- factor(LAGOStrophic$trophic.class.secchi,
                                      levels = c("Oligotrophic", "Mesotrophic", "Eutrophic", "Hypereutrophic"))
-
-
 class(LAGOStrophic$trophic.class.tp)
-
 LAGOStrophic$trophic.class.tp <- factor(LAGOStrophic$trophic.class.tp,
                                      levels = c("Oligotrophic", "Mesotrophic", "Eutrophic", "Hypereutrophic"))
-
+class(LAGOStrophic$trophic.class)
+LAGOStrophic$trophic.class <- factor(LAGOStrophic$trophic.class,
+                                     levels = c("Oligotrophic", "Mesotrophic", "Eutrophic", "Hypereutrophic"))
 ```
 
 
 4. How many observations fall into the four trophic state categories for the three metrics (trophic.class, trophic.class.secchi, trophic.class.tp)? Hint: `n()` function.
 
 ```{r}
+LAGOStrophic %>%
+  group_by(trophic.class)%>%
+  summarise(count=n())
 
+LAGOStrophic %>%
+  group_by(trophic.class.secchi)%>%
+  summarise(count=n())
+
+LAGOStrophic %>%
+  group_by(trophic.class.tp)%>%
+  summarise(count=n())
 ```
 
 5. What proportion of total observations are considered eutrophic or hypereutrophic according to the three different metrics (trophic.class, trophic.class.secchi, trophic.class.tp)?
 
 ```{r}
+LAGOStrophic %>%
+  group_by(trophic.class)%>%
+  summarise(count=n()) %>%
+  mutate(prop=count/sum(count))
 
+LAGOStrophic %>%
+  group_by(trophic.class.secchi)%>%
+  summarise(count=n()) %>%
+  mutate(prop=count/sum(count))
+
+LAGOStrophic %>%
+  group_by(trophic.class.tp)%>%
+  summarise(count=n()) %>%
+  mutate(prop=count/sum(count))
 ```
 
 Which of these metrics is most conservative in its designation of eutrophic conditions? Why might this be?
@@ -93,12 +122,31 @@ Which of these metrics is most conservative in its designation of eutrophic cond
 6. Create a data frame that includes the columns lagoslakeid, sampledate, tn, tp, state, and state_name. Mutate this data frame to include sampleyear and samplemonth columns as well. Filter the data frame for May-September. Call this data frame LAGOSNandP. 
 
 ```{r}
+LAGOSstate <- LAGOSdata$state
+LAGOSnutrient <- LAGOSdata$epi_nutr
+LAGOSlocus <- LAGOSdata$locus
+
+LAGOSNandP<- LAGOSstate %>%
+  left_join(., LAGOSlocus) %>%
+  left_join(., LAGOSnutrient) %>%
+  select(lagoslakeid,sampledate,tn,tp,state,state_name)%>%
+  mutate(sampleyear=year(sampledate),
+         samplemonth=month(sampledate))%>%
+  filter(samplemonth %in% c(5:9))
 
 ```
 
 7. Create two violin plots comparing TN and TP concentrations across states. Include a 50th percentile line inside the violins. Create a logged y axis and relabel axes.
 ```{r}
+ggplot(LAGOSNandP, aes(x=state_name, y=tp))+
+  geom_violin(draw_quantiles = 0.50)+
+  scale_y_log10()+
+  labs(x="State",y=expression("TP ("*mu*"g/L)"))
 
+ggplot(LAGOSNandP, aes(x=state_name, y=tn))+
+  geom_violin(draw_quantiles = 0.50)+
+  scale_y_log10()+
+  labs(x="State",y=expression("TN ("*mu*"g/L)"))
 ```
 
 Which states have the highest and lowest median concentrations?
@@ -116,7 +164,18 @@ Which states have the largest and smallest concentration ranges?
 8. Create two jitter plots comparing TN and TP concentrations across states, with samplemonth as the color. Choose a color palette other than the ggplot default.
 
 ```{r}
+ggplot(LAGOSNandP, aes(x=state_name, y=tp, color=samplemonth))+
+  geom_jitter(alpha = 0.2, size = 0.5)+
+  scale_y_log10()+
+  labs(x="State",y=expression("TP ("*mu*"g/L)"))
 
+ggplot(LAGOSNandP, aes(x=state_name, y=tn, color=samplemonth))+
+  geom_jitter(alpha = 0.2, size = 0.5)+
+  scale_y_log10()+
+  labs(x="State",y=expression("TN ("*mu*"g/L)"))
+
+
+geom_jitter(alpha = 0.2, size = 0.5)
 ```
 
 Which states have the most samples? How might this have impacted total ranges from #7?

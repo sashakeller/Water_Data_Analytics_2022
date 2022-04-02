@@ -110,11 +110,11 @@ class(LAGOSnutrient$sampledate)
 
 LAGOStrophic <- LAGOSnutrient %>%
   left_join(., LAGOSlocations, by = "lagoslakeid") %>%
-  select(lagoslakeid, sampledate, chla, tp, secchi, 
+  select(lagoslakeid, sampledate, chla, tp, secchi,tn, 
          gnis_name, lake_area_ha, state, state_name) %>%
   mutate(sampleyear = year(sampledate), 
          samplemonth = month(sampledate)) %>%
-  drop_na(chla, tp, secchi, state)
+  drop_na(chla, tp, tn,secchi, state)
 
 ```
 

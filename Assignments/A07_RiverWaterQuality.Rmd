@@ -1,6 +1,6 @@
 ---
 title: "Assignment 7: Water Quality in Rivers"
-author: "Student Name"
+author: "Sasha Keller"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
@@ -28,7 +28,14 @@ Target due date: 2022-03-22
 
 
 ```{r}
+getwd()
 
+library(tidyverse)
+library(lubridate)
+library(cowplot)
+library(dataRetrieval)
+
+theme_set(theme_dark())
 ```
 
 ## Hypoxia
@@ -39,20 +46,27 @@ This assignment will look at another measure of water quality - oxygen concentra
 2. Import the oxygen water quality data from New Hope Creek at Blands (using `readWQPqw()`, site code `USGS-02097314`, parameter code `00300`). Make a data frame called `NewHopeDO` that includes only the Date and dissolved oxygen concentration values. Rename the column names "Date" and "DO_mgL".
 
 ```{r}
+NewHopeWQ<-readWQPqw(siteNumbers = "USGS-02097314", # Neuse River at Kinston, NC
+                     parameterCd = "00300",
+                     startDate = "1976-01-01",
+                     endDate = "")
 
-
+NewHopeDO<-NewHopeWQ %>%
+  select(ActivityStartDate, ResultMeasureValue) %>% #units for DO = mg/L
+  mutate(Date = ActivityStartDate, DO_mgL=ResultMeasureValue, .keep="none")
 ```
 
 3. Create a ggplot of oxygen concentrations over time. Include a horizonal line at 2 mg/l to show the hypoxia cutoff. 
 
 ```{r}
-
+NHDOplot<-ggplot(NewHopeDO, aes(x=Date, y=DO_mgL))+
+  geom_point()
 
 ```
 
 4. What do you notice about the frequency of hypoxia over time?
 
-> 
+> It appears hypoxia only occurred during the first few years of measurements, which have several times more measurements than all other years.
 
 ## Nutrients
 
@@ -60,16 +74,24 @@ This assignment will look at another measure of water quality - oxygen concentra
 
 
 ```{r}
+NewHopeNU<-readWQPqw(siteNumbers = "USGS-02097314", # Neuse River at Kinston, NC
+                     parameterCd = "00665",
+                     startDate = "1976-01-01",
+                     endDate = "")
 
+NewHopeTP<-NewHopeNU %>%
+  select(ActivityStartDate, ResultMeasureValue) %>% #units for DO = mg/L
+  mutate(Date = ActivityStartDate, TP_mgL=ResultMeasureValue, .keep="none")
 
 ```
 
 6.  Create two ggplots stacked with `plot_grid` that show DO and TP concentrations over time.
 
 ```{r}
+NHTPplot<-ggplot(NewHopeTP, aes(x=Date, y=TP_mgL))+
+  geom_point()
 
-
-
+plot_grid(NHDOplot,NHTPplot, ncol = 1, rel_heights = c(1, 1),align = "hv")
 ```
 
 7. What do these plots tell you about nutrient concentrations over time? How might nutrient concentrations relate to your previous plot of hypoxia events?
