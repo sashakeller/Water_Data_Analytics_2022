@@ -47,7 +47,7 @@ MysterySiteDischarge <- readNWISdv(siteNumbers = "03431700",
 names(MysterySiteDischarge)[4:5] <- c("Discharge", "Approval.Code")
 view(MysterySiteDischarge)
 ggplot(MysterySiteDischarge, aes(x=Date,y=Discharge)
-      )+ geom_point(alpha=0.5)
+      )+ geom_line()
 
 ```
 
@@ -103,10 +103,11 @@ MysterySite.Annual.Full<-MysterySiteDischarge%>%
          RecurrenceInterval=(length(WaterYear)+1)/Ranking,
          Probability=1/RecurrenceInterval)
 
-ggplot(MysterySite.Annual.Full, aes(x=WaterYear, y=RecurrenceInterval))+
-  geom_point()+
-  geom_point(data=MysterySite.Annual.30yr, color="orange",aes(x=WaterYear, y=RecurrenceInterval))+
-  scale_y_continuous("Recurrence Interval", limits=c(0, 58))
+ggplot(MysterySite.Annual.30yr, aes(x = RecurrenceInterval, y = PeakDischarge)) +
+  geom_point() +
+  geom_point(data = MysterySite.Annual.Full, color = "#02818a",
+  aes(x = RecurrenceInterval, y = PeakDischarge)) +
+  scale_x_log10()
 
 MysterySite.RI30<-lm(data=MysterySite.Annual.30yr, PeakDischarge ~ log10(RecurrenceInterval))
 summary(MysterySite.RI30)
@@ -120,6 +121,6 @@ MysterySite.RIFull$coefficients[1] + MysterySite.RIFull$coefficients[2]*log10(10
 
 11. How did the recurrence interval plots and predictions of a 100-year flood differ among the two data frames? What does this tell you about the stationarity of discharge in this river?
 
-> The recurrence intervals coinicinded surprisingly well. The two highest points reached fairly distinct levels of disparity, but the majority of points were the same across the overlapping 30 year period. This indicates a significant degree of stationarity for this river. The discrepency could indicate some changes in the latter 30 year portion (potentially climate change), but it is relatively quite stable.
+> The recurrence intervals coincided surprisingly well. The two highest points reached fairly distinct levels of disparity, but the majority of points were the same across the overlapping 30 year period. This indicates a significant degree of stationarity for this river. The discrepancy could indicate some changes in the latter 30 year portion (potentially climate change), but it is relatively quite stable.
 
 

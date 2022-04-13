@@ -114,7 +114,7 @@ LAGOStrophic %>%
 
 Which of these metrics is most conservative in its designation of eutrophic conditions? Why might this be?
 
-> 
+> Total Phosphorous is the most conservative designator of eutrophic conditions. This may be the hardest metric to obtain or the one least correlated with actual eutrophication. While chlorophyll is a direct measurement of the source of eutrophication and secchi depth a direct measurement of the consequences of eutrophication, phosphorous is a measurement of a potential driver for eutrophication. This being one step removed from the eutrophication process may result in less accuracy.
 
 
 ## Nutrient Concentrations
@@ -175,7 +175,6 @@ ggplot(LAGOSNandP, aes(x=state_name, y=tn, color=samplemonth))+
   labs(x="State",y=expression("TN ("*mu*"g/L)"))
 
 
-geom_jitter(alpha = 0.2, size = 0.5)
 ```
 
 Which states have the most samples? How might this have impacted total ranges from #7?

@@ -1,6 +1,6 @@
 ---
 title: "Assignment 9: Mapping"
-author: "Student Name"
+author: "Sasha Keller"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
@@ -28,7 +28,16 @@ Target due date: 2022-04-12
 
 
 ```{r setup}
+library(tidyverse)
+library(LAGOSNE)
+library(maps)
+library(dataRetrieval)
+#install.packages("sf")
+library(sf)
+#install.packages("nhdplusTools")
+library(nhdplusTools)
 
+theme_set(theme_dark())
 ```
 
 ## LAGOS-NE
@@ -39,8 +48,61 @@ Target due date: 2022-04-12
 * A boxplot with jittered points layered on top of chlorophyll concentrations in each lake (chlorophyll on y axis, lake on x axis), with each lake having a fill and/or color that matches the map. 
 
 ```{r}
+# generate a map of U.S. states
+states <- st_as_sf(map(database = "state", plot = TRUE, fill = TRUE, col = "white"))
+
+# filter only states that are included in the LAGOSNE database
+states.subset <- filter(states, ID=="new york")
+
+# visualize state plot
+ggplot(states.subset) +
+  geom_sf(fill = "white")
+
+# load LAGOSNE data frames
+LAGOSdata <- lagosne_load()
+LAGOSlocus <- LAGOSdata$locus
+LAGOSstate <- LAGOSdata$state
+LAGOSnutrient <- LAGOSdata$epi_nutr
+LAGOSlimno <- LAGOSdata$lakes_limno
 
 
+# Create a data frame to visualize chlorophyll a concentration
+LAGOScombined <- 
+  left_join(LAGOSnutrient, LAGOSlocus) %>%
+  left_join(., LAGOSlimno) %>%
+  left_join(., LAGOSstate) %>%
+  filter(!is.na(state)) %>%
+  select(lagoslakeid, sampledate, chla, lake_area_ha, maxdepth, nhd_lat, nhd_long, state)
+
+
+chla.ny.summary <- LAGOScombined %>%
+  filter(state=="NY")%>%
+  group_by(lagoslakeid) %>%
+  filter(lagoslakeid %in% c(122514,70859,51269,140000,9298))%>%
+  summarise(chla.mean = mean(chla),
+            area = mean(lake_area_ha),
+            depth = mean(maxdepth),
+            lat = mean(nhd_lat), 
+            long = mean(nhd_long)) %>%
+  drop_na()
+
+#make spatial objects and maps
+chla.spatial <- st_as_sf(chla.ny.summary, coords = c("long", "lat"), crs = 4326)
+
+
+
+ggplot() +
+  geom_sf(data = states.subset, fill = "white") +
+  geom_sf(data = chla.spatial, aes(color = lagoslakeid), 
+          alpha = 0.5, size = 4) #+
+  #scale_color_viridis_c(trans = "log10", end = 0.8, direction = -1) +
+  #labs(color = "Average Chlorophyll A Concentration (micrograms/L)") +
+  #theme(legend.position = "top")
+
+chlaboxplot<- ggplot(LAGOScombined,aes(x=as.factor(lagoslakeid), y=chla, fill=as.factor(lagoslakeid)))+
+  geom_boxplot()+
+  geom_jitter(alpha=0.5)
+chlaboxplot
 ```
 
 
@@ -50,13 +112,76 @@ Target due date: 2022-04-12
 
 
 ```{r}
+NeuseParams <- whatNWISdata(siteNumbers = "02085070")
+NeuseCoords <- NeuseParams %>%
+  select(site_no, dec_lat_va, dec_long_va) %>%
+  distinct()
+
+# Define the gage site as the starting point
+start_point <- st_sfc(st_point(c(NeuseCoords$dec_long_va, NeuseCoords$dec_lat_va)), 
+                      crs = 4269) # NAD83, commonly  used by US agencies
+start_comid <- discover_nhdplus_id(start_point)
+# start_point2 <- st_as_sf(data.frame(x = NeuseCoords$dec_long_va, y =  NeuseCoords$dec_lat_va), 
+#                             coords = c("x", "y"), crs = 4269)
+
+# Navigate the NLDI network
+NLDI <- navigate_nldi(list(featureSource = "comid", featureID = start_comid), 
+                          mode = "upstreamTributaries", 
+                          distance_km = 1000)
+
+# Extract watershed and flowpath information
+subset_file <- tempfile(fileext = ".gpkg")
+subset <- subset_nhdplus(comids = as.integer(NLDI$UT$nhdplus_comid),
+                         output_file = subset_file,
+                         nhdplus_data = "download", 
+                         flowline_only = FALSE,
+                         return_data = TRUE, overwrite = TRUE)
+
+# Create data frames
+flowline <- subset$NHDFlowline_Network
+catchment <- subset$CatchmentSP
+waterbody <- subset$NHDWaterbody
+
+class(flowline)
+class(catchment)
+class(waterbody)
+
+# find gages near watershed
+gages <- get_nwis(AOI = catchment)
+class(gages)
+
+# find gages only within watershed
+gages <- st_intersection(gages, catchment)
 
 
+plot_nhdplus("USGS-02085070")
+
+states <- st_as_sf(map(database = "state", plot = FALSE, fill = TRUE, col = "white"))
+nc <- filter(states, ID == "north carolina")
+
+ggplot(nc) +
+  geom_sf(fill = "white") +
+  geom_sf(data = flowline, aes(color = streamorde)) +
+  labs(color = "Stream Order") +
+  theme(legend.position = "top")
+
+ggplot(catchment) +
+  geom_sf(fill = "white", color = "gray", lwd = 0.5) +
+  geom_sf(data = flowline, aes(color = streamorde)) +
+  geom_sf(data = gages, color = "darkred", size = 1) +
+  labs(color = "Stream Order") +
+  theme(legend.position = "top")
+
+max(flowline$totdasqkm)
+summary(as.factor(flowline$streamorde))
+gages<-get_nwis(AOI=catchment)
+gages<-st_intersection(gages,catchment)
+gages
 ```
 
 4. What is the upstream drainage area for this gage, and how are the flowpaths distributed with regard to stream order?
 
-> 
+> Upstream drainage spans 368 square kilometers, with 123 first order streams, 45 second order streams, 19 third order streams, and 28 fourth order streams.
 
 5. Are there any other gage sites in the upstream catchment? If so, where are they?
-> 
+> There are two additional gages: 02085039 and 02085000.

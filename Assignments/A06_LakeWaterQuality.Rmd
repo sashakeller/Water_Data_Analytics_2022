@@ -106,10 +106,33 @@ NCdata_processed <- NCdata %>%
                                           DetectionQuantitationLimitMeasure.MeasureValue, 
                                         TRUE ~ ResultMeasureValue)) %>%
   drop_na(Variable, ResultMeasureValue, Depth_m)
-  
+
+NCdata_processed$ActivityStartDate <- as.Date(NCdata_processed$ActivityStartDate, "%Y-%m-%d")
+NCdata_processed <- NCdata_processed %>%
+select(OrganizationIdentifier, OrganizationFormalName, ActivityStartDate,
+ActivityConductingOrganizationText, MonitoringLocationIdentifier,
+Depth_m, ResultMeasureValue, Variable) %>%
+group_by(OrganizationIdentifier, OrganizationFormalName, ActivityStartDate,
+ActivityConductingOrganizationText, MonitoringLocationIdentifier,
+Depth_m, Variable) %>%
+summarise(ResultMeasureValue = mean(ResultMeasureValue, na.rm = TRUE)) %>%
+mutate(Month = month(ActivityStartDate),
+Year = year(ActivityStartDate)) %>%
+pivot_wider(names_from = "Variable", values_from = "ResultMeasureValue") %>%
+filter(Month %in% c(5:10)) %>%
+filter(Depth_m <= 1)
+
+
+ggplot(NCdata_processed, aes(x = TP_mgL, y = Chla_ugL)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  scale_x_log10() +
+  scale_y_log10() +
+  labs(x = "TP (mg/L)", y = expression("Chl a ("*mu*"g/L)"))
+
 
 ```
   
 6. How might you expect this stressor-response relationship to change (or not) across the Mountains, Piedmont, and Coastal Plain regions of the state? How might you anticipate natural lakes might behave differently than reservoirs?
 
-> 
+> I would expect natural lakes to be more resistant, perhaps, to the stress of increased phosphorous. However, reservoirs may be more closely managed and be made more resilient artificially. I would suspect that the mountains which are perhaps more hydrologically isolated/stagnant than the more flood prone coastal areas may be more susceptible to phosphorous stress with less flowing water to dilute it and refresh the waterbodies regularly. The Piedmont would represent a logical middle ground between the two.

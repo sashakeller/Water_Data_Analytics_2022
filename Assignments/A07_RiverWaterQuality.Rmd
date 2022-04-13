@@ -60,8 +60,10 @@ NewHopeDO<-NewHopeWQ %>%
 
 ```{r}
 NHDOplot<-ggplot(NewHopeDO, aes(x=Date, y=DO_mgL))+
-  geom_point()
+  geom_point()+
+  geom_hline(yintercept=2)
 
+NHDOplot
 ```
 
 4. What do you notice about the frequency of hypoxia over time?
@@ -96,24 +98,37 @@ plot_grid(NHDOplot,NHTPplot, ncol = 1, rel_heights = c(1, 1),align = "hv")
 
 7. What do these plots tell you about nutrient concentrations over time? How might nutrient concentrations relate to your previous plot of hypoxia events?
 
-> 
+> High P concentrations could be correlated with hypoxia events.  No hypoxia events occurred during the latter years with no P spikes.
 
 ## Discharge and Dissolved Oxygen
 
 8. Turbulent flow in rivers mixes oxygen into the water column. As discharge decreases, water moves slower, and oxygen diffuses slower into the water from the atmosphere. Download and reformat the daily discharge data for New Hope Creek (function `readNWISdv()`, site `02097314`, parameter `00060`). 
 
 ```{r}
+NHCDischarge <- readNWISdv(siteNumbers = "02097314", parameterCd = "00060",startDate ="1976-01-01", endDate = "" )
 
-
+names(NHCDischarge)[4:5] <- c("Discharge", "Approval.Code")
 ```
 
 9.  Create two ggplots stacked with `plot_grid` that show DO concentrations and discharge over time, for the two years we observed hypoxia (1983 and 1984).
 
 ```{r}
+NHCDischargeHypo<-NHCDischarge %>%
+  filter(Date > "1983-1-1" &  Date <"1985-1-1")
+NHCDOHypo<-NewHopeDO %>%
+  filter(Date > "1983-1-1" &  Date <"1985-1-1")
 
+NHCHPlot <- NHCDischargeHypo %>%
+  ggplot(aes(x=Date,y=Discharge))+
+  geom_line()
+NHDOHplot<- NHCDOHypo %>%
+  ggplot(aes(x=Date, y=DO_mgL))+
+  geom_point()
+
+plot_grid(NHDOHplot, NHCHPlot, ncol = 1, rel_heights=c(1,1), align="hc")
 
 ```
 
 10. Do hypoxic events happen in the wet or the dry season? Why might that be?
 
-> 
+> They appear to happen in the dry season. This could be a result of the creek drying out or becoming stagnant preventing the circulation of water and oxygen.
