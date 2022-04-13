@@ -17,19 +17,26 @@ mainfont: Times New Roman
 
 ```{r setup, include=FALSE}
 # Set your working directory
-
+getwd()
 # Load your packages
+library(EcoHydRology)
+library(tidyverse)
+library(cowplot)
+library(dataRetrieval)
+library(lubridate)
+library(lfstat)
 
 # Set your ggplot theme
-
+theme_set(theme_dark())
 # Load your datasets
 
 ```
 
 
 # Rationale and Research Questions
+As we go out into a new world racked with climate change, we will encounter shifts in weather patterns with drastic consequences. As environmental managers we must be aware of alternate regimes and their potential consequences. To this end I am investigating effects of El Niño and La Niña on streams in Washington state. I will focus on discharge data to investigate potential effects on water supply throughout the year.
 
-
+#Discharge displays effects of?
 
 \newpage
 
